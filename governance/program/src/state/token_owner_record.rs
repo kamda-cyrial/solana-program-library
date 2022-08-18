@@ -16,6 +16,7 @@ use crate::{
 };
 
 use borsh::{BorshDeserialize, BorshSchema, BorshSerialize};
+use shank::ShankAccount;
 use solana_program::{
     account_info::{next_account_info, AccountInfo},
     borsh::try_from_slice_unchecked,
@@ -28,7 +29,7 @@ use spl_governance_tools::account::{get_account_data, AccountMaxSize};
 
 /// Governance Token Owner Record
 /// Account PDA seeds: ['governance', realm, token_mint, token_owner ]
-#[derive(Clone, Debug, PartialEq, BorshDeserialize, BorshSerialize, BorshSchema)]
+#[derive(Clone, Debug, PartialEq, BorshDeserialize, BorshSerialize, BorshSchema, ShankAccount)]
 pub struct TokenOwnerRecordV2 {
     /// Governance account type
     pub account_type: GovernanceAccountType,

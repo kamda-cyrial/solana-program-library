@@ -6,13 +6,14 @@ use solana_program::{
 };
 
 use borsh::{BorshDeserialize, BorshSchema, BorshSerialize};
+use shank::ShankAccount;
 use spl_governance_tools::account::{get_account_data, AccountMaxSize};
 
 use crate::{error::GovernanceError, state::enums::GovernanceAccountType};
 
 /// RealmConfig account
 /// The account is an optional extension to RealmConfig stored on Realm account
-#[derive(Clone, Debug, PartialEq, BorshDeserialize, BorshSerialize, BorshSchema)]
+#[derive(Clone, Debug, PartialEq, BorshDeserialize, BorshSerialize, BorshSchema, ShankAccount)]
 pub struct RealmConfigAccount {
     /// Governance account type
     pub account_type: GovernanceAccountType,

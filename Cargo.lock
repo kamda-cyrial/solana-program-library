@@ -5957,6 +5957,7 @@ dependencies = [
  "proptest",
  "serde",
  "serde_derive",
+ "shank",
  "solana-program",
  "solana-program-test",
  "solana-sdk",
