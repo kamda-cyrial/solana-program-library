@@ -2589,6 +2589,39 @@ async fn command_update_pointer_address(
             config.output_format.formatted_string(&signature)
         }
         TransactionReturnData::CliSignOnlyData(sign_only_data) => {
+            config.output_format.formatted_string(&sign_only_data) 
+        }
+    })
+}
+
+async fn command_initialize_group(
+    config: &Config<'_>,
+    token_pubkey: &Pubkey,
+    mint_authority: Pubkey,
+    update_authority: Pubkey,
+    max_size: u32,
+    bulk_signers: BulkSigners,
+) -> CommandResult {
+    if config.sign_only {
+        panic!("Config can not be sign-only for initializing a group.");
+    }
+
+    let token = token_client_from_config(config, &token_pubkey, None)?;
+    let res: RpcClientResponse = token
+        .token_group_initialize(
+            &mint_authority,
+            &update_authority,
+            max_size,
+            &bulk_signers,
+        )
+        .await?;
+
+    let tx_return = finish_tx(config, &res, false).await?;
+    Ok(match tx_return { 
+        TransactionReturnData::CliSignature(signature) => {
+            config.output_format.formatted_string(&signature)
+        }
+        TransactionReturnData::CliSignOnlyData(sign_only_data) => { 
             config.output_format.formatted_string(&sign_only_data)
         }
     })
@@ -2818,7 +2851,7 @@ async fn command_update_confidential_transfer_settings(
                 format!("  auditor encryption pubkey set to {}", new_auditor_pubkey,),
             );
         } else {
-            println_display(config, "  auditability disabled".to_string())
+            println_display(config, "  auditabiflity disabled".to_string())
         }
     }
 
@@ -4066,6 +4099,31 @@ pub async fn process_command<'a>(
                 member_address,
                 bulk_signers,
                 Pointer::GroupMember,
+            )
+            .await
+        }
+        (CommandName::InitializeGroup, arg_matches) => {
+            let token = pubkey_of_signer(arg_matches, "token_pubkey", &mut wallet_manager)
+                .unwrap()
+                .unwrap();
+
+            let (mint_authority_signer, authority) =
+                config.signer_or_default(arg_matches, "mint_authority", &mut wallet_manager);
+            if config.multisigner_pubkeys.is_empty() {
+                push_signer_with_dedup(mint_authority_signer, &mut bulk_signers);
+            }
+            let update_authority = config
+                .pubkey_or_default(arg_matches, "update_authority", &mut wallet_manager).unwrap();
+
+            let max_size = value_t!(arg_matches, "max_size", u32).unwrap();
+
+            command_initialize_group(
+                config,
+                &token,
+                authority,
+                update_authority,
+                max_size,
+                bulk_signers,
             )
             .await
         }

@@ -118,6 +118,8 @@ pub enum CommandName {
     ApplyPendingBalance,
     UpdateGroupAddress,
     UpdateMemberAddress,
+    InitializeGroup,
+    // InitializeMember,
 }
 impl fmt::Display for CommandName {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
@@ -2024,6 +2026,52 @@ pub fn app<'a, 'b>(
                             Defaults to the client keypair.",
                         ),
                 )
+                .arg(multisig_signer_arg())
+                .nonce_args(true)
+        )
+        .subcommand(
+            SubCommand::with_name(CommandName::InitializeGroup.into())
+                .about("Initializes a group account. Requires the group extension.")
+                .arg(
+                    Arg::with_name("token_pubkey")
+                        .index(1)
+                        .validator(is_valid_pubkey)
+                        .value_name("TOKEN_MINT_ADDRESS")
+                        .takes_value(true)
+                        .required(true)
+                        .help("Specify the mint Id for the group"),
+                ).arg(
+                    Arg::with_name("max_size")
+                        .index(2)
+                        .value_name("MAX_SIZE")
+                        .validator(is_parsable::<u32>)
+                        .takes_value(true)
+                        .help(
+                            "Specify the maximum number of members in the group."
+                        ),
+                )
+                .arg(
+                    Arg::with_name("mint_authority")
+                        .long("mint-authority")
+                        .value_name("KEYPAIR")
+                        .validator(is_valid_signer)
+                        .takes_value(true)
+                        .help(
+                            "Specify the mint authority keypair. \
+                            This may be a keypair file or the ASK keyword. \
+                            Defaults to the client keypair.",
+                        ),
+                )
+                .arg(
+                    Arg::with_name("update_authority")
+                        .long("update-authority")
+                        .value_name("UPDATE_AUTHORITY_ADDRESS")
+                        .validator(is_valid_pubkey)
+                        .takes_value(true)
+                        .help(
+                            "Specify the update authority public key."
+                        ),
+                )                
                 .arg(multisig_signer_arg())
                 .nonce_args(true)
         )
